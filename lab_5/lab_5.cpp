@@ -1,100 +1,108 @@
-﻿#include <stdio.h>
-#include <stdlib.h>
 #include <iostream>
+#define inf 1000000
 using namespace std;
+int min_top(int** arr,int v) {
+    int m=0;
+    for (int i = 0; i < v; i++) {
+        if (arr[i][1]) {
+            m = i; break;
+        }
+    }
+
+    for (int i = 1; i < v; i++) {
+        if (arr[m][0] >= arr[i][0] && arr[i][1]==1) {
+            m = i;
+        }
+    }
+    return m;
+}
+
 int main()
 {
-	setlocale(LC_ALL, "Ukrainian");
+    setlocale(LC_ALL, "Ukrainian");
 
-	int v, count = 0, min = 0, k, t;
-	bool check =false;
-	cout << "Кiлькiсть вершин графа : ";
-	cin >> v;
-	int* tops = new int[v];
-	int** graph = new int* [v];
-	int** ribs = new int* [v - 1];
+    int a, b, c;
+    int v = 0;
+    cout << "Кiлькiсть вершин графа : ";
+    cin >> v;
+    int** graph = new int* [v];
 
-	for (int j = 0; j < v; j++) {
-		graph[j] = new int[v];
-	}
+    for (int j = 0; j < v; j++) {
+        graph[j] = new int[v];
+    }
 
-	for (int j = 0; j < v - 1; j++) {
-		ribs[j] = new int[2];
-	}
+    for (int a = 0; a < v; a++) {
+        for (int j = 0; j < v; j++) {
+             graph[a][j] = 0;
 
-	for (int a = 0; a < v; a++) {
-		for (int j = 0; j < v; j++) {
-			cin >> graph[a][j];
+        }
+    }
+    cout << "Введiть вагу ребер графа : " << endl;
 
-		}
-	}
-	//////Будуємо дерево, що включає в себе одну вершину
-
-	tops[count] = 1;
-	count++;
-
-	 ///Знаходження мінімального кістякового дерева
-	for (int i = 0; count < v; i++) {
-		for (int j = 0; j < count;j++) {
-			for (int a = 0; a < v; a++) {
-				for (int m = 0; m < count; m++) {
-					if (tops[m] == a + 1) {
-						check = true;
-					}
-				}
-				if (check) { check = false; continue; }
-				if (min == 0 && graph[tops[j] - 1][a] > 0) {
-					min = graph[tops[j] - 1][a]; 
-					k = ribs[count - 1][0] = tops[j]; t = ribs[count - 1][1] = a + 1;
-					continue;
-				}
-				if (graph[tops[j] - 1][a] > 0 && graph[tops[j] - 1][a] < min) {
-					min = graph[tops[j] - 1][a];
-					k=ribs[count-1][0] = tops[j]; t = ribs[count-1][1] = a + 1;
-				}
-			}
-			
-
-		}
-
-		graph[k-1][t-1] = 0; graph[t-1][k-1] = 0;
-
-		tops[count] = t;
-		count++;
-		min = 0;
+    while (true) {
+        cin >> a;
+        if (a == -1) { break; }
+        cin >> b;
+        cin >> c;
+        graph[a-1][b-1] = graph[b-1][a-1] = c;
+    }
 
 
-	}
-	/////Результат
-	
 
-	cout << "V: { ";
-	for (int j = 0; j < v; j++) {
-		cout << tops[j]<<", ";
-	}
-	cout << "}";
-	cout <<endl<< "E:{ ";
-	for (int j = 0; j < v - 1; j++) {
-		cout << "( " << ribs[j][0]<<", "<< ribs[j][1]<<" ), ";
-	}
-	cout << "}";
+    int p;
+    int** tops = new int*[v];
+    for (int j = 0; j < v; j++) {
+        tops[j] = new int[2];
+    }
+    int* tops_path = new int[v];
 
-		return 0;
-	}
+    cout << "Вихiдна вершина: ";
+    cin >> p;
 
-	/*
-0 2 7 1 0 0 0 0 0 0 0
-2 0 0 0 2 0 7 0 0 0 0
-7 0 0 0 1 4 0 0 0 0 0
-1 0 0 0 0 3 5 0 0 0 0
-0 2 1 0 0 0 0 4 5 0 0
-0 0 4 3 0 0 0 6 0 2 0
-0 7 0 5 0 0 0 0 3 7 0
-0 0 0 0 4 6 0 0 0 0 3
-0 0 0 0 5 0 3 0 0 0 4
-0 0 0 0 0 2 7 0 0 0 4
-0 0 0 0 0 0 0 3 4 4 0
+    for (int i = 0; i < v; i++) {
+        if (i == p-1) {
+            tops[i][0] = 0;
+            tops[i][1] = 1;
+        }
+        else {
+            tops[i][0] = inf;
+            tops[i][1] = 1;
+        }
+    }
+    tops_path[p-1] = 0;
+    
 
-	*/
 
-	
+    int m;
+
+    for (int i = 0; i < v; i++) {
+        m = min_top(tops, v);
+        for (int j = 0; j < v; j++) {
+            if (graph[m][j]) {
+                if (tops[j][0] > tops[m][0] + (graph[m][j])) {
+                    tops[j][0] = tops[m][0] + (graph[m][j]);
+                    tops_path[j] = m;
+                }
+            }
+
+        }
+        tops[m][1] = 0;         
+
+    }
+
+    ////шлях
+    cout << "Введiть потрiбну вершину: ";
+    int k; cin >> k; 
+    cout << "Мiнiмальний шлях: ";
+    cout << tops[k-1][0];
+    cout << endl << k <<" <-- ";
+    k--;
+    for (int a = 0; tops_path[k] != p-1; a++) {
+        cout << tops_path[k]+1 <<" <-- ";
+        k = tops_path[k];
+    }
+    cout << p << endl;
+
+
+    return 0;
+}
